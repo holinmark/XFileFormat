@@ -1,0 +1,20 @@
+xof 0303txt 0032
+
+Animation {}
+Animation TwoAnimation {}
+Animation ThreeAnimation
+{}
+
+AnimationSet One
+{
+  Animation {}
+  Animation{}
+  Animation
+  {}
+}
+
+AnimationSet Two
+{
+}
+
+AnimationSet Three{} // End of AnimationSet
