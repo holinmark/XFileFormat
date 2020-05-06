@@ -1,0 +1,77 @@
+xof 0303txt 0032
+
+Material grey {
+  0.800000011920929; 0.800000011920929; 0.800000011920929; 1.0;;
+  50;
+  1.0; 1.0; 1.0;;
+  0.0; 0.0; 0.0;;
+  TextureFilename {
+    "^%**^$$&*ava.jpg";
+  } // End of TextureFileName
+} // End of Material grey
+
+Material red {
+  0.800000011920929; 0.0; 0.0; 1.0;;
+  50;
+  1.0; 1.0; 1.0;;
+  0.0; 0.0; 0.0;;
+  TextureFilename {
+    "ava.jpg";
+  } // End of TextureFileName
+} // End of Material red
+
+Mesh 1.001{
+1;
+0.0; 1.0; 2.0;;
+1;
+3; 1, 2, 3;;
+}
+
+Frame root {
+	FrameTransformMatrix{1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0;;}
+	Frame FrameCube {
+		Frame subFrameCube{
+		}
+		Frame sub2 {
+		}
+		Frame sub3 {
+		}
+		Frame sub4 {
+		}
+	}
+	Frame FramePlane {
+		Frame subFramePlane{
+			Frame subsubFramePlane{
+			}
+		}
+	}
+	Frame FrameSphere {
+		FrameTransformMatrix { 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0;; }
+	}
+}
+
+Frame FrameOne{
+	{ root }
+	Frame FrameTwo {}
+}
+
+Frame FrameTwo
+{
+	{root}
+}
+
+Frame {
+	{ FrameOne }
+	Frame { Frame {} }
+	Frame { Frame Inside{}}
+	Frame s{Frame t{}}
+}
+
+Frame 234{
+}
+
+Frame {
+	{1.001}
+	{234}
+	Frame SubFrame{}
+}
