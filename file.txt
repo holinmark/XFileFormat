@@ -1,1 +1,1 @@
-.\\mesh\\Animation.txt
+.\\mesh\\bones.txt

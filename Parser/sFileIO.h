@@ -20,6 +20,7 @@ namespace ns_HoLin
 
 		sFileIO(const wchar_t*);
 		~sFileIO();
+		void Close();
 		BOOL GetNextCharFromBuffer(BOOL);
 	};
 }

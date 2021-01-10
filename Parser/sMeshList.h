@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <vector>
 #include <string>
+#include <utility>
 
 #include "SkinInfo.h"
 #include "sAnimationSet.h"
@@ -17,7 +18,9 @@ namespace ns_HoLin
 		std::vector<std::vector<DWORD>> facevertexindices;
 
 		sMeshFaces();
+		sMeshFaces(sMeshFaces&&);
 		~sMeshFaces();
+		sMeshFaces& operator=(sMeshFaces&&);
 		void Cleanup(HANDLE = NULL);
 	};
 
@@ -87,10 +90,12 @@ namespace ns_HoLin
 		ns_HoLin::sMeshExtraAttributes *p_extra;
 		// pointer to the next mesh
 		ns_HoLin::sMesh *pnextmesh;
-		static std::size_t number_of_mesh_created;
+		//static std::size_t number_of_mesh_created;
 
 		sMesh();
+		sMesh(sMesh&&);
 		~sMesh();
+		sMesh& operator=(sMesh&&);
 		void Cleanup();
 	};
 

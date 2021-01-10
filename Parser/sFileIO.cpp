@@ -29,12 +29,17 @@ namespace ns_HoLin
 			delete[] file_buffer;
 			file_buffer = nullptr;
 		}
+		Close();
+	}
+	
+	void sFileIO::Close()
+	{
 		if (hfile) {
 			CloseHandle(hfile);
 			hfile = nullptr;
 		}
 	}
-	
+
 	BOOL sFileIO::GetNextCharFromBuffer(BOOL btrackoutput)
 	{
 		if (index_of_next_char_to_read == bytes_read_from_file) {

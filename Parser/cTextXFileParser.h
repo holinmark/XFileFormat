@@ -77,6 +77,7 @@ namespace ns_HoLin
 		BOOL GetInteger(char*, std::size_t);
 		BOOL GetFloat(char*, std::size_t, BOOL = FALSE);
 		BOOL GetFloat(char*, std::size_t, void*);
+		BOOL GetVectorBody(char*, std::size_t, void*);
 		BOOL GetVector(char*, std::size_t, void*);
 		BOOL GetPolygon(char*, std::size_t, void*);
 		BOOL GetPolygons(char*, std::size_t, void*);

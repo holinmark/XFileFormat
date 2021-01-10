@@ -18,10 +18,12 @@ namespace ns_HoLin
 		std::vector<float> tfkeys;
 
 		sTimedFloatKeys();
-		sTimedFloatKeys(sTimedFloatKeys&&);
+		sTimedFloatKeys(sTimedFloatKeys&&) noexcept;
+		sTimedFloatKeys(const sTimedFloatKeys&);
 		~sTimedFloatKeys();
 		void Cleanup(HANDLE = NULL);
-		sTimedFloatKeys& operator=(sTimedFloatKeys&&);
+		sTimedFloatKeys& operator=(sTimedFloatKeys&&) noexcept;
+		sTimedFloatKeys& operator=(const sTimedFloatKeys&);
 	};
 
 	struct sAnimation_Data
@@ -30,7 +32,7 @@ namespace ns_HoLin
 		// 1 for scale DirectX::XMFLOAT3
 		// 2 for translate DirectX::XMFLOAT3
 		DWORD type_of_transform;
-		std::vector<std::vector<ns_HoLin::sTimedFloatKeys>> transformation_data;
+		std::vector<ns_HoLin::sTimedFloatKeys> transformation_data;
 		sAnimation_Data *pnextanimation_data;
 
 		sAnimation_Data();

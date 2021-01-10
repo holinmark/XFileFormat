@@ -24,9 +24,11 @@ namespace ns_HoLin
 		DirectX::XMFLOAT4X4 matrixOffset;
 
 		sSkinWeights();
-		sSkinWeights(sSkinWeights&&);
+		sSkinWeights(sSkinWeights&&) noexcept;
+		sSkinWeights(const sSkinWeights&) noexcept;
 		~sSkinWeights();
-		sSkinWeights& operator=(sSkinWeights&&);
+		sSkinWeights& operator=(sSkinWeights&&) noexcept;
+		sSkinWeights& operator=(const sSkinWeights&);
 	};
 
 	struct sSkinInfo

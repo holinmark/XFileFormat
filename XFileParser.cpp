@@ -61,6 +61,17 @@ void PrintMesh(ns_HoLin::sMeshList *p_list_of_meshes)
 		std::clog << "Number of meshes " << p_list_of_meshes->number_of_meshes << '\n';
 		while (pmesh) {
 			std::clog << "\tMesh " << pmesh->name.c_str() << '\n';
+			if (pmesh->p_extra) {
+				if (pmesh->p_extra->p_skininfo) {
+					for (std::size_t i=0; i<pmesh->p_extra->p_skininfo->p_skin_weights.size(); ++i) {
+						if (pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights.size() == pmesh->p_extra->p_skininfo->p_skin_weights[i].p_vertexIndices.size()) {
+							for (std::size_t j=0; j<pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights.size(); ++j) {
+								//std::clog << pmesh->p_extra->p_skininfo->p_skin_weights[i].p_vertexIndices[j] << " : " << pmesh->p_extra->p_skininfo->p_skin_weights[i].p_weights[j] << '\n';
+							}
+						}
+					}
+				}
+			}
 			pmesh = pmesh->pnextmesh;
 		}
 	}
@@ -136,22 +147,18 @@ void PrintAnimationSet(ns_HoLin::sAnimationSetList *psetlist)
 				number_of_animations++;
 				std::clog << "\t\tAnimation " << p_anim->name << '\n';
 				p = p_anim->pfirst_data;
-				/*
 				while (p) {
 					std::clog << "\t\t\tTransform type " << p->type_of_transform << '\n';
 					for (DWORD i = 0; i < p->transformation_data.size(); ++i) {
-						for (DWORD j=0; j < p->transformation_data[i].size(); ++j) {
-							for (DWORD k = 0; k < p->transformation_data[i][j].tfkeys.size(); ++k) {
-								std::clog << p->transformation_data[i][j].tfkeys[k] << ", ";
-							}
-							std::clog << '\n';
+						std::clog << p->transformation_data[i].time << " : ";
+						for (DWORD j=0; j < p->transformation_data[i].tfkeys.size(); ++j) {
+							std::clog << p->transformation_data[i].tfkeys[j] << ", ";
 						}
 						std::clog << '\n';
 					}
 					std::clog << '\n';
 					p = p->pnextanimation_data;
 				}
-				*/
 				p_anim = p_anim->pnextanimation;
 			}
 			p_anim_set = p_anim_set->pnext_set;
@@ -182,7 +189,7 @@ void PrintData(ns_HoLin::cTextXFileParser *p_xfile)
 	PrintMesh(&p_xfile->xfiledata.smeshlist);
 	//PrintFrames(p_xfile->xfiledata.sframeslist.pfirstseq);
 	//PrintMaterials(p_xfile->xfiledata.smateriallist, pmesh, "Global materials");
-	PrintAnimationSet(&p_xfile->xfiledata.sanimationsetlist);
+	//PrintAnimationSet(&p_xfile->xfiledata.sanimationsetlist);
 	//PrintDuplicates(p_xfile->xfiledata.smeshlist.pfirstmesh);
 }
 
