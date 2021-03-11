@@ -15,10 +15,11 @@ namespace ns_HoLin
 
 		sMaterial();
 		~sMaterial();
+		sMaterial(const sMaterial&);
 		sMaterial(sMaterial&&);
 		sMaterial& operator=(sMaterial&&);
 	};
-/*
+	/*
 	struct sMaterialList
 	{
 		sMaterial *pfirstmaterial, *plastmaterial;
@@ -31,5 +32,6 @@ namespace ns_HoLin
 		void InsertMaterial(sMaterial*);
 		sMaterial* Search(const char*);
 		BOOL Find(std::string);
-	};*/
+	};
+	*/
 }

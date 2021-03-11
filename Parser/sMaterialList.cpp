@@ -15,6 +15,16 @@ namespace ns_HoLin
 		filename.clear();
 	}
 
+	sMaterial::sMaterial(const sMaterial &other)
+	{
+		name = other.name;
+		facecolor = other.facecolor;
+		power = other.power;
+		specularcolor = other.specularcolor;
+		emissivecolor = other.emissivecolor;
+		filename = other.filename;
+	}
+
 	sMaterial::sMaterial(sMaterial &&other)
 	{
 		name = other.name;
@@ -39,7 +49,7 @@ namespace ns_HoLin
 		other.filename.clear();
 		return *this;
 	}
-/*
+	/*
 	sMaterialList::sMaterialList()
 	{
 		pfirstmaterial = nullptr;
@@ -115,5 +125,6 @@ namespace ns_HoLin
 			}
 		}
 		return FALSE;
-	}*/
+	}
+	*/
 }

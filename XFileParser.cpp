@@ -188,7 +188,7 @@ void PrintData(ns_HoLin::cTextXFileParser *p_xfile)
 
 	PrintMesh(&p_xfile->xfiledata.smeshlist);
 	//PrintFrames(p_xfile->xfiledata.sframeslist.pfirstseq);
-	//PrintMaterials(p_xfile->xfiledata.smateriallist, pmesh, "Global materials");
+	//PrintMaterials(p_xfile->xfiledata.smateriallist, p_xfile->xfiledata.smeshlist.pfirstmesh, "Global materials");
 	//PrintAnimationSet(&p_xfile->xfiledata.sanimationsetlist);
 	//PrintDuplicates(p_xfile->xfiledata.smeshlist.pfirstmesh);
 }
@@ -228,14 +228,14 @@ BOOL ReadMeshFile(ns_HoLin::cTextXFileParser *p_io)
 	BOOL mode32bit = TRUE;
 	
 	if (p_io) {
-		if (*p_io) {
-			if (p_io->ParseFile()) {
-				PrintData(p_io);
-				return TRUE;
-			}
-			else {
-				std::cerr << "Error parsing x file.\n";
-			}
+		if (!(*p_io))
+			return FALSE;
+		if (p_io->ParseFile()) {
+			PrintData(p_io);
+			return TRUE;
+		}
+		else {
+			std::cerr << "Error parsing x file.\n";
 		}
 	}
 	return FALSE;

@@ -47,6 +47,7 @@ namespace ns_HoLin
 		~cTextXFileParser();
 		BOOL ParseFile();
 		explicit operator bool() const;
+		bool operator !() const;
 	private:
 		std::size_t linenumber;
 		ns_HoLin::sFunctionCallHistory functioncalls;

@@ -76,6 +76,11 @@ namespace ns_HoLin
 		return (sfile.hfile != nullptr);
 	}
 
+	bool cTextXFileParser::operator !() const
+	{
+		return !(sfile.hfile != nullptr);
+	}
+
 	BOOL cTextXFileParser::GetChar()
 	{
 		if (sfile.GetNextCharFromBuffer(trackoutput)) {
