@@ -34,3 +34,6 @@ struct sMesh is where each individual mesh is stored:
 		points to NULL if there is no extra information on the mesh.
 	'pnextmesh' points to the next mesh. Points to NULL at end.
 
+Need to does:
+	1 Fix error output. Not working properly.
+	
