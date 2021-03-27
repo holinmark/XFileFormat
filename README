@@ -8,7 +8,10 @@ If you know that the mesh file is error free, comment out
 </code>
 in file stdafx.h line 3. It should parse the mesh file much faster.
 
-To use in Win32 mode just declare a variable type
+To use in Win32 mode just declare a variable type ns_HoLin::cXFile then call method ReadXFile(name of x file) returns
+TRUE if success. Then call method GetXFileType() for type of mesh file (TEXT_FILE, BINARY_FILE or ZIP_FILE). TEXT_FILE only
+supported at the moment. Then declare type ns_HoLin::cTextXFileParser pointer to receive text data.
+
 <code>
 ns_HoLin::cXFile file;
 
