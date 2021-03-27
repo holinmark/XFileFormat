@@ -25,7 +25,7 @@ if (file.ReadXFile(file_name)) {
 		}
 	}
 }
-<\code>
+</code>
 
 To use in console application mode:
 <code>
@@ -45,7 +45,7 @@ if (file.ReadCommandLineArgumentsThenParse(argv, argc)) {
 		}
 	}
 }
-<\code>
+</code>
 
 At the command prompt type
 application.exe <options>
