@@ -1,7 +1,25 @@
 # XFileParser
-A DirectX 11.0 x file mesh parser.
+A DirectX 11.0 x file mesh parser. Written for consoleapplictions. It can be ported for Win32 mode but
+would need some altering.
 
-To use type:
+To use in Win32 mode just declare a variable type
+<code>
+ns_HoLin::cXFile file;
+
+if (file.ReadXFile(file_name)) {
+	// returns TRUE if success FALSE otherwise
+	// then call method GetXFileType() returns if TEXT_FILE or BINARY_FILE or ZIP_FILE
+	// right now only TEXT_FILE supported.
+	if (file.GetXFileType() == TEXT_FILE) {
+		// declare variable ns_HoLin::cTextXFileParser pointer and call method GetTextData() for text version
+		ns_HoLin::cTextXFileParser *pdata = (ns_HoLin::cTextXFileParser*)file.GetTextData();
+		// with *pdata variable you have access to all mesh, frame and animation
+		pdata->xfiledata; // holds all data
+	}
+}
+</code>
+
+To use type in consoleapplication mode:
 application.exe <options>
 
 options are:
