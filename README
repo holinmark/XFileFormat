@@ -54,4 +54,6 @@ struct sMesh is where each individual mesh is stored:
 
 Need to does:
 	1 Fix error output. Not working properly.
+	2 Haven't thoroughly tested for bugs.
+	
 	
