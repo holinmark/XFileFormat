@@ -2,24 +2,52 @@
 A DirectX 11.0 x file mesh parser. Written for consoleapplictions. It can be ported for Win32 mode but
 would need some altering.
 
+If you know that the mesh file is error free, comment out
+<code>
+//#define FUNCTIONCALLSTACK
+<\code>
+in file stdafx.h line 3. It should parse the mesh file much faster.
+
 To use in Win32 mode just declare a variable type
 <code>
 ns_HoLin::cXFile file;
 
 if (file.ReadXFile(file_name)) {
 	// returns TRUE if success FALSE otherwise
-	// then call method GetXFileType() returns if TEXT_FILE or BINARY_FILE or ZIP_FILE
+	// then call method GetXFileType() returns TEXT_FILE or BINARY_FILE or ZIP_FILE
 	// right now only TEXT_FILE supported.
 	if (file.GetXFileType() == TEXT_FILE) {
 		// declare variable ns_HoLin::cTextXFileParser pointer and call method GetTextData() for text version
 		ns_HoLin::cTextXFileParser *pdata = (ns_HoLin::cTextXFileParser*)file.GetTextData();
 		// with *pdata variable you have access to all mesh, frame and animation
-		pdata->xfiledata; // holds all data
+		if (pdata) {
+			pdata->xfiledata; // holds all data
+		}
 	}
 }
-</code>
+<\code>
 
-To use type in consoleapplication mode:
+To use in console application mode:
+<code>
+//Declare variable
+ns_HoLin::cXFile file;
+
+// Then call method ReadCommandLineArgumentsThenParse
+if (file.ReadCommandLineArgumentsThenParse(argv, argc)) {
+	// returns true if parsed error free
+	// then call GetXFileType() returns TEXT_FILE or BINARY_FILE or ZIP_FILE. Only TEXT_FILE is supported at this moment.
+	if (file.GetXFileType() == TEXT_FILE) {
+		// declare variable ns_HoLin::cTextXFileParser pointer and call method GetTextData() for text version
+		ns_HoLin::cTextXFileParser *pdata = (ns_HoLin::cTextXFileParser*)file.GetTextData();
+		// with *pdata you have access to all mesh, frame and animation
+		if (pdata) {
+			pdata->xfiledata; // holds all data
+		}
+	}
+}
+<\code>
+
+At the command prompt type
 application.exe <options>
 
 options are:
