@@ -112,7 +112,7 @@ void PrintFrames(ns_HoLin::sSequenceOfFrames *pframeseq)
 					for (auto m : pframe->mesh) {
 						std::clog << m.c_str() << ", ";
 					}
-					std::clog << '\n';
+std::clog << '\n';
 				}
 				pframe = pframe->pnextframe;
 			}
@@ -121,7 +121,7 @@ void PrintFrames(ns_HoLin::sSequenceOfFrames *pframeseq)
 		}
 	}
 	else {
-		std::clog <<"\nNo frames\n\n";
+	std::clog << "\nNo frames\n\n";
 	}
 }
 
@@ -151,7 +151,7 @@ void PrintAnimationSet(ns_HoLin::sAnimationSetList *psetlist)
 					std::clog << "\t\t\tTransform type " << p->type_of_transform << '\n';
 					for (DWORD i = 0; i < p->transformation_data.size(); ++i) {
 						std::clog << p->transformation_data[i].time << " : ";
-						for (DWORD j=0; j < p->transformation_data[i].tfkeys.size(); ++j) {
+						for (DWORD j = 0; j < p->transformation_data[i].tfkeys.size(); ++j) {
 							std::clog << p->transformation_data[i].tfkeys[j] << ", ";
 						}
 						std::clog << '\n';
@@ -195,12 +195,14 @@ void PrintData(ns_HoLin::cTextXFileParser *p_xfile)
 int wmain(DWORD argv, const wchar_t **argc)
 {
 	ns_HoLin::cXFile xfile;
-	
+
+#ifdef _WINDOWS
+	// Win32 application
 	if (xfile.ReadXFile(L"mesh//Five_Wheeler_mesh.txt")) {
 		std::cout << "Success.\n";
 		if (xfile.GetXFileType() == TEXT_FILE) {
 			ns_HoLin::cTextXFileParser *p = xfile.GetTextData();
-
+	
 			if (p) {
 				PrintData(p);
 			}
@@ -209,6 +211,22 @@ int wmain(DWORD argv, const wchar_t **argc)
 			}
 		}
 	}
+#endif
+#ifdef _CONSOLE
+	// Console application
+	if (xfile.ReadCommandLineArgumentsThenParse(argv, argc)) {
+		std::cout << "Success.\n";
+		if (xfile.GetXFileType() == TEXT_FILE) {
+			ns_HoLin::cTextXFileParser *p = xfile.GetTextData();
+			if (p) {
+				PrintData(p);
+			}
+			else {
+				std::cout << "Error pointer.\n";
+			}
+		}
+	}
+#endif
 	std::clog << "Closing program.\n";
 	return 1;
 }

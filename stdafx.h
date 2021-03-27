@@ -1,6 +1,6 @@
 #pragma once
 
-#define FUNCTIONCALLSTACK
+//#define FUNCTIONCALLSTACK
 
 #include "targetver.h"
 
