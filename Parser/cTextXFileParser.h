@@ -32,6 +32,9 @@ namespace ns_HoLin
 		ns_HoLin::sMeshList smeshlist;
 		ns_HoLin::sFrames sframeslist;
 		ns_HoLin::sAnimationSetList sanimationsetlist;
+		
+		~sXFileData();
+		void Cleanup();
 	};
 	
 	class cTextXFileParser

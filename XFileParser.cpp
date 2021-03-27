@@ -187,7 +187,7 @@ void PrintData(ns_HoLin::cTextXFileParser *p_xfile)
 
 	PrintMesh(&p_xfile->xfiledata.smeshlist);
 	PrintFrames(p_xfile->xfiledata.sframeslist.pfirstseq);
-	//PrintMaterials(p_xfile->xfiledata.smateriallist, p_xfile->xfiledata.smeshlist.pfirstmesh, "Global materials");
+	PrintMaterials(p_xfile->xfiledata.smateriallist, p_xfile->xfiledata.smeshlist.pfirstmesh, "Global materials");
 	//PrintAnimationSet(&p_xfile->xfiledata.sanimationsetlist);
 	//PrintDuplicates(p_xfile->xfiledata.smeshlist.pfirstmesh);
 }

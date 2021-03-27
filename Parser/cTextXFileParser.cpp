@@ -2,6 +2,19 @@
 
 namespace ns_HoLin
 {
+	sXFileData::~sXFileData()
+	{
+		Cleanup();
+	}
+
+	void sXFileData::Cleanup()
+	{
+		smateriallist.clear();
+		smeshlist.Cleanup();
+		sframeslist.Cleanup();
+		sanimationsetlist.Cleanup();
+	}
+	
 	cTextXFileParser::cTextXFileParser()
 	{
 		linenumber = 1;

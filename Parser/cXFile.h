@@ -36,6 +36,7 @@ namespace ns_HoLin
 	public:
 		cXFile();
 		~cXFile();
+		void Cleanup();
 		operator bool() {
 			if (hfile)
 				return true;
