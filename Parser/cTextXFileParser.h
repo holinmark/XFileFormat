@@ -43,9 +43,9 @@ namespace ns_HoLin
 		BOOL trackoutput;
 		BOOL endoffile;
 		
-		cTextXFileParser(const wchar_t*);
+		cTextXFileParser();
 		~cTextXFileParser();
-		BOOL ParseFile();
+		BOOL ParseFile(HANDLE, BOOL = FALSE);
 		explicit operator bool() const;
 		bool operator !() const;
 	private:

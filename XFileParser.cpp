@@ -183,124 +183,31 @@ void PrintDuplicates(ns_HoLin::sMesh *p_mesh)
 
 void PrintData(ns_HoLin::cTextXFileParser *p_xfile)
 {
-	//	ns_HoLin::sSequenceOfFrames *pframeseq = p_xfile->xfiledata.sframeslist.pfirstseq;
 	ns_HoLin::sAnimationSetList *pset = &p_xfile->xfiledata.sanimationsetlist;
 
 	PrintMesh(&p_xfile->xfiledata.smeshlist);
-	//PrintFrames(p_xfile->xfiledata.sframeslist.pfirstseq);
+	PrintFrames(p_xfile->xfiledata.sframeslist.pfirstseq);
 	//PrintMaterials(p_xfile->xfiledata.smateriallist, p_xfile->xfiledata.smeshlist.pfirstmesh, "Global materials");
 	//PrintAnimationSet(&p_xfile->xfiledata.sanimationsetlist);
 	//PrintDuplicates(p_xfile->xfiledata.smeshlist.pfirstmesh);
 }
 
-ns_HoLin::cTextXFileParser* OpenFileWithMeshFileName()
-{
-	std::wifstream fin;
-	wchar_t buff[MAX_PATH];
-	ns_HoLin::cTextXFileParser *p_io = NULL;
-
-	buff[0] = L'\0';
-	fin.open(L"file.txt");
-	if (fin.is_open()) {
-		fin.getline(buff, MAX_PATH);
-		fin.close();
-		if (std::wcslen(buff) > 0) {
-			p_io = new ns_HoLin::cTextXFileParser(buff);
-			if (p_io == nullptr) {
-				std::cerr << "Unable to allocate memory. " << __LINE__ << '\n';
-				return (ns_HoLin::cTextXFileParser*)NULL;
-			}
-			std::wclog << L"Reading from mesh file \'" << buff << "\'\n";
-		}
-		else {
-			std::cerr << "Error no mesh file name in \'file.txt\'.\n";
-		}
-	}
-	else {
-		std::cerr << "\nError opening \'file.txt\'.\n";
-	}
-	return p_io;
-}
-
-BOOL ReadMeshFile(ns_HoLin::cTextXFileParser *p_io)
-{
-	BOOL textfile = TRUE;
-	BOOL mode32bit = TRUE;
-	
-	if (p_io) {
-		if (!(*p_io))
-			return FALSE;
-		if (p_io->ParseFile()) {
-			PrintData(p_io);
-			return TRUE;
-		}
-		else {
-			std::cerr << "Error parsing x file.\n";
-		}
-	}
-	return FALSE;
-}
-
 int wmain(DWORD argv, const wchar_t **argc)
 {
-	std::array<std::wstring, 2> state_strings{ // Do not reposition strings
-		std::wstring(L"-trackoutput"),
-		std::wstring(L"-f"),
-	};
-	std::unordered_map<std::wstring, DWORD> map_options{
-		std::make_pair(state_strings[0], 0),
-		std::make_pair(state_strings[1], 1)};
-	std::array<std::any, state_strings.size()> arguments_options;
-	ns_HoLin::cTextXFileParser *p_xfile = nullptr;
+	ns_HoLin::cXFile xfile;
+	
+	if (xfile.ReadXFile(L"mesh//Five_Wheeler_mesh.txt")) {
+		std::cout << "Success.\n";
+		if (xfile.GetXFileType() == TEXT_FILE) {
+			ns_HoLin::cTextXFileParser *p = xfile.GetTextData();
 
-	if (argv > 1) {
-		for (DWORD i = 1; i < argv; ++i) {
-			if (state_strings[0] == std::wstring(argc[i])) {
-				arguments_options[map_options[state_strings[0]]] = TRUE;
-			}
-			else if (state_strings[1] == std::wstring(argc[i])) {
-				if (argv <= (i + 1)) {
-					std::cerr << "Error -f option, no file name entered, exiting.\n";
-					return 0;
-				}
-				arguments_options[map_options[state_strings[1]]] = std::wstring(argc[++i]);
+			if (p) {
+				PrintData(p);
 			}
 			else {
-				std::wcerr << L"Unknown command " << argc[i] << L'\n';
+				std::cout << "Error pointer.\n";
 			}
 		}
-		if (arguments_options[map_options[state_strings[1]]].has_value()) {
-			p_xfile = new ns_HoLin::cTextXFileParser(std::any_cast<std::wstring>(arguments_options[map_options[state_strings[1]]]).c_str());
-		}
-	}
-	if (p_xfile == nullptr) {
-		p_xfile = OpenFileWithMeshFileName();
-	}
-	if (p_xfile) {
-		if (arguments_options[map_options[state_strings[0]]].has_value())
-			p_xfile->trackoutput = std::any_cast<BOOL>(arguments_options[map_options[state_strings[0]]]);
-		if (*p_xfile) {
-			std::cout << "Mesh file opened.\n";
-			try {
-				if (ReadMeshFile(p_xfile)) {
-					std::clog << "Success.\n";
-				}
-			}
-			catch (ns_HoLin::sErrorMessageException serror) {
-				std::cerr << serror.what();
-			}
-			catch (std::exception e) {
-				std::cerr << e.what() << '\n';
-			}
-		}
-		else {
-			std::cerr << "Error opening mesh file.\n";
-		}
-		delete p_xfile;
-		p_xfile = NULL;
-	}
-	else {
-		std::cerr << "Error allocating memory.\n " << __LINE__ << '\n' << __FILE__ << '\n';
 	}
 	std::clog << "Closing program.\n";
 	return 1;

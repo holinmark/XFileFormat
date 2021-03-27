@@ -2,7 +2,7 @@
 
 namespace ns_HoLin
 {
-	cTextXFileParser::cTextXFileParser(const wchar_t *filename) : sfile(filename)
+	cTextXFileParser::cTextXFileParser()
 	{
 		linenumber = 1;
 		endoffile = FALSE;
@@ -17,23 +17,16 @@ namespace ns_HoLin
 		functioncalls.history.clear();
 	}
 
-	BOOL cTextXFileParser::ParseFile()
+	BOOL cTextXFileParser::ParseFile(HANDLE hfile, BOOL btrack)
 	{
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(std::string("ParseFile"));
 #endif
 		const std::size_t blen = 1024;
 		char buff[blen];
-
-		if (sfile.hfile == nullptr) {
-			std::clog << "Unable to open file.\n" << __LINE__ << '\n' << __FILE__ << '\n';
-			return FALSE;
-		}
-		if (GetXFileHeader() == FALSE) {
-			sfile.Close();
-			std::clog << "Error reading header.\n" << linenumber << '\n' << __LINE__ << '\n';
-			return FALSE;
-		}
+		
+		trackoutput = btrack;
+		sfile.hfile = &hfile;
 		while (TRUE) {
 			if (GetChar()) {
 				if (IsWhiteSpace(this, (int)sfile.ch))
@@ -50,24 +43,19 @@ namespace ns_HoLin
 						if (ExtractTemplates(buff, blen))
 							continue;
 					}
-					sfile.Close();
 					return PrintOffendingLine("\n%s \'%s\' %zu %u\n", "Error unknown string", buff, linenumber, __LINE__);
 				}
 				else {
-					sfile.Close();
 					return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
 				}
 			}
 			if (endoffile) {
-				sfile.Close();
 				return TRUE;
 			}
 			else {
-				sfile.Close();
 				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unknown token", sfile.ch, linenumber, __LINE__);
 			}
 		}
-		sfile.Close();
 		return FALSE;
 	}
 
@@ -91,6 +79,8 @@ namespace ns_HoLin
 			if (sfile.ch == '\n') {
 				linenumber++;
 			}
+			if (trackoutput)
+				std::clog << sfile.ch;
 			return TRUE;
 		}
 		if (sfile.bytes_read_from_file == 0)
@@ -100,6 +90,9 @@ namespace ns_HoLin
 
 	BOOL cTextXFileParser::GetXFileHeader()
 	{
+#ifdef FUNCTIONCALLSTACK
+		ns_HoLin::sFunctionCallHistory currentfunction(std::string("GetXFileHeader"));
+#endif
 		struct sXFileHeader
 		{
 			char magic_number[4];
@@ -107,45 +100,48 @@ namespace ns_HoLin
 			char minor[2];
 			char format_type[4];
 			char float_size[4];
-			char pad;
 		};
-		sXFileHeader sxheader;
+		sXFileHeader headerbuffer;
 		BOOL textfile = FALSE, mode32bit = FALSE;
-		DWORD datasize = sizeof(sXFileHeader) - sizeof(char);
+		DWORD datasize = sizeof(sXFileHeader);
 		DWORD bytesreceived = 0;
-		long s = 0;
+		long headerdata = 0;
 
 		if (GetChar() == FALSE) {
 			return FALSE;
 		}
-		memset((void*)&sxheader, 0, sizeof(sXFileHeader));
-		if (memcpy_s((void*)&sxheader, datasize, (const void*)sfile.file_buffer, datasize) != 0) {
+		std::clog << "\nHeader read.\n";
+		memset((void*)&headerbuffer, 0, sizeof(sXFileHeader));
+		if (memcpy_s((void*)&headerbuffer, datasize, (const void*)sfile.file_buffer, datasize) != 0) {
 			return PrintOffendingLine("\n%s\n%zu %u\n", "Error reading x file header.", linenumber, __LINE__);
 		}
 		sfile.index_of_next_char_to_read += datasize;
-		s = ((long)sxheader.magic_number[0]) + ((long)sxheader.magic_number[1] << 8) + ((long)sxheader.magic_number[2] << 16) + ((long)sxheader.magic_number[3] << 24);
-		if (s != XOFFILE_FORMAT_MAGIC) {
+		memcpy_s((void*)&headerdata, sizeof(long), (const void*)&headerbuffer.magic_number, sizeof(long));
+		if (headerdata != XOFFILE_FORMAT_MAGIC) {
 			return PrintOffendingLine("\n%s\n%zu %u\n", "Not an x file format.", linenumber, __LINE__);
 		}
-		s = ((long)sxheader.format_type[0]) + ((long)sxheader.format_type[1] << 8) + ((long)sxheader.format_type[2] << 16) + ((long)sxheader.format_type[3] << 24);
-		if (s != XOFFILE_FORMAT_TEXT) {
-			if (s == XOFFILE_FORMAT_BINARY) {
-				textfile = FALSE;
-				return PrintOffendingLine("\n%s\n%zu %u\n", "Error, binary x file format not supported.", linenumber, __LINE__);
-			}
-		}
-		else {
+		memcpy_s((void*)&headerdata, sizeof(long), (const void*)headerbuffer.format_type, sizeof(long));
+		if (headerdata == XOFFILE_FORMAT_TEXT) {
 			textfile = TRUE;
+			std::clog << "Text file.\n";
 		}
-		s = ((long)sxheader.float_size[0]) + ((long)sxheader.float_size[1] << 8) + ((long)sxheader.float_size[2] << 16) + ((long)sxheader.float_size[3] << 24);
-		if (s != XOFFILE_FORMAT_FLOAT_BITS_32) {
-			if (s == XOFFILE_FORMAT_FLOAT_BITS_64) {
-				mode32bit = FALSE;
-				return PrintOffendingLine("\n%s\n%zu %u\n", "64 bit floating point not supported.", linenumber, __LINE__);
-			}
+		else if (headerdata == XOFFILE_FORMAT_BINARY) {
+			textfile = FALSE;
+			return PrintOffendingLine("\n%s\n%zu %u\n", "Binary format unsupported at this time.", linenumber, __LINE__);
+		}
+		else if (headerdata == XOFFILE_FORMAT_COMPRESSED) {
+			return PrintOffendingLine("\n%s\n%zu %u\n", "Compressed file format unsupported.", linenumber, __LINE__);
 		}
 		else {
+			return PrintOffendingLine("\n%s\n%zu %u\n", "Unknown file format.", linenumber, __LINE__);
+		}
+		memcpy_s((void*)&headerdata, sizeof(long), (const void*)headerbuffer.float_size, sizeof(long));
+		if (headerdata == XOFFILE_FORMAT_FLOAT_BITS_32) {
 			mode32bit = TRUE;
+		}
+		else if (headerdata == XOFFILE_FORMAT_FLOAT_BITS_64) {
+			mode32bit = FALSE;
+			return PrintOffendingLine("\n%s\n%zu %u\n", "64 bit floating point not supported at this time.", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
@@ -1075,7 +1071,7 @@ namespace ns_HoLin
 #endif
 
 		buff[0] = '\0';
-		if (GetArray(buff, blen, (void*)&vertices, numofvertices, &cTextXFileParser::GetVector)) {
+		if (GetArray(buff, blen, (void*)&vertices, numofvertices, &cTextXFileParser::GetVectorBody)) {
 			return TRUE;
 		}
 		return PrintOffendingLine(NULL);
@@ -1116,7 +1112,7 @@ namespace ns_HoLin
 		DWORD number_of_face_indices = 0;
 
 		p_meshnormals->normals.reserve((std::size_t)number_of_normals);
-		if (GetArray(buff, blen, (void*)&p_meshnormals->normals, number_of_normals, &cTextXFileParser::GetVector) == FALSE)
+		if (GetArray(buff, blen, (void*)&p_meshnormals->normals, number_of_normals, &cTextXFileParser::GetVectorBody) == FALSE)
 			return FALSE;
 		if (GetUnsignedInteger(buff, blen) == FALSE)
 			return FALSE;
@@ -2266,7 +2262,7 @@ namespace ns_HoLin
 		DWORD index = 0, count = 0;
 		
 		if (trackoutput) {
-			std::cout << sfile.file_buffer;
+			//std::cout << sfile.file_buffer;
 		}
 		for (index = sfile.index_of_next_char_to_read; index < sfile.page_size_in_bytes; ++index) {
 			if (sfile.file_buffer[index] == '\n')

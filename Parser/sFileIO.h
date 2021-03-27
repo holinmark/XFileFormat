@@ -10,7 +10,7 @@ namespace ns_HoLin
 {
 	struct sFileIO
 	{
-		HANDLE hfile = NULL;
+		PHANDLE hfile = NULL;
 		char ch = ' ';
 		DWORD page_size_in_bytes = 0;
 		char *file_buffer = NULL;
@@ -18,9 +18,8 @@ namespace ns_HoLin
 		DWORD index_of_next_char_to_read = 0;
 		std::string prevpage;
 
-		sFileIO(const wchar_t*);
+		sFileIO();
 		~sFileIO();
-		void Close();
 		BOOL GetNextCharFromBuffer(BOOL);
 	};
 }
