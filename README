@@ -5,7 +5,7 @@ would need some altering.
 If you know that the mesh file is error free, comment out
 <code>
 //#define FUNCTIONCALLSTACK
-<\code>
+</code>
 in file stdafx.h line 3. It should parse the mesh file much faster.
 
 To use in Win32 mode just declare a variable type
