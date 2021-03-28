@@ -30,7 +30,7 @@ namespace ns_HoLin
 		functioncalls.history.clear();
 	}
 
-	BOOL cTextXFileParser::ParseFile(HANDLE hfile, BOOL btrack)
+	BOOL cTextXFileParser::ParseFile(PHANDLE hfile, BOOL btrack)
 	{
 #ifdef FUNCTIONCALLSTACK
 		ns_HoLin::sFunctionCallHistory currentfunction(std::string("ParseFile"));
@@ -39,7 +39,7 @@ namespace ns_HoLin
 		char buff[blen];
 		
 		trackoutput = btrack;
-		sfile.hfile = &hfile;
+		sfile.hfile = hfile;
 		while (TRUE) {
 			if (GetChar()) {
 				if (IsWhiteSpace(this, (int)sfile.ch))

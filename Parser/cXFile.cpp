@@ -99,13 +99,28 @@ namespace ns_HoLin
 		Cleanup();
 		text.xfiledata.Cleanup();
 		if (file_name) {
-			openfile(file_name);
-			if (hfile) {
+			if (openfile(file_name)) {
 				BOOL r = this->ParseFile(FALSE);
 				CloseHandle(hfile);
 				hfile = nullptr;
 				return r;
 			}
+			else {
+				CloseHandle(hfile);
+				hfile = nullptr;
+#ifdef _WINDOWS
+				MessageBox(nullptr, L"Could not open mesh file.", L"Error", MB_OK);
+#else
+				std::cout << "Could not open mesh file.\n";
+#endif
+			}
+		}
+		else {
+#ifdef _WINDOWS
+			MessageBox(nullptr, L"No file name entered.", L"Error", MB_OK);
+#else
+			std::cout << "Error no file name entered.\n";
+#endif
 		}
 		return FALSE;
 	}
@@ -253,7 +268,7 @@ namespace ns_HoLin
 	{
 		if (ReadHeader()) {
 			if (file_type == TEXT_FILE) {
-				return text.ParseFile(hfile, btrack);
+				return text.ParseFile(&hfile, btrack);
 			}
 		}
 		return FALSE;

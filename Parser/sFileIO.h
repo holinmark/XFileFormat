@@ -10,7 +10,7 @@ namespace ns_HoLin
 {
 	struct sFileIO
 	{
-		PHANDLE hfile = NULL;
+		PHANDLE hfile = nullptr;
 		char ch = ' ';
 		DWORD page_size_in_bytes = 0;
 		char *file_buffer = NULL;
