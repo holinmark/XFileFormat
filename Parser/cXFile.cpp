@@ -147,56 +147,106 @@ namespace ns_HoLin
 	{
 		struct sHeader {
 			char xfileindicator[4];
-			char major_version[2];
-			char minor_version[2];
+			char version[4];
 			char format[4];
 			char floatsize[4];
 		};
 
 		sHeader headerbuffer;
 		DWORD bytesread = 0;
-		long data = 0, data1 = 0;
+		long data = 0;
 
 		if (ReadFile(hfile, (LPVOID)&headerbuffer, sizeof(headerbuffer), &bytesread, nullptr)) {
 			if (bytesread == sizeof(headerbuffer)) {
-				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.xfileindicator, sizeof(long)) == 0) {
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.xfileindicator, sizeof(char) * 4) == 0) {
 					switch (data) {
 					case XOFFILE_FORMAT_MAGIC:
 						break;
 					default:
+#ifdef _WINDOWS
+						MessageBox(nullptr, L"Error not an x file.", L"Error", MB_OK);
+#else
 						std::cout << "Error not an x file.\n";
+#endif
 						return FALSE;
 					}
 				}
-				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.format, sizeof(long)) == 0) {
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.version, sizeof(char) * 4) == 0) {
+					switch (data) {
+					case XOFFILE_FORMAT_VERSION:
+						break;
+					default:
+#ifdef _WINDOWS
+						MessageBox(nullptr, L"Error unknown version.", L"Error", MB_OK);
+#else
+						std::cout << "Error unknown version.\n";
+#endif
+						return FALSE;
+					}
+				}
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.format, sizeof(char) * 4) == 0) {
 					switch (data) {
 					case XOFFILE_FORMAT_TEXT:
 						file_type = TEXT_FILE;
 						break;
 					case XOFFILE_FORMAT_BINARY:
 						file_type = BINARY_FILE;
-						break;
+#ifdef _WINDOWS
+						MessageBox(nullptr, L"Binary version not supported at this time.", L"Error", MB_OK);
+#else
+						std::cout << "Binary version not supported at this time.\n";
+#endif
+						return FALSE;
 					case XOFFILE_FORMAT_COMPRESSED:
+						file_type = ZIP_FILE;
+#ifdef _WINDOWS
+						MessageBox(nullptr, L"Can't read compressed file.", L"Error", MB_OK);
+#else
+						std::cout << "Can't read compressed file.\n";
+#endif
 						return FALSE;
 					default:
-						std::cout << "Unknown\n";
+#ifdef _WINDOWS
+						MessageBox(nullptr, L"Error unknown file format.", L"Error", MB_OK);
+#else
+						std::cout << "Error unknown file format.\n";
+#endif
 						return FALSE;
 					}
 				}
-				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.floatsize, sizeof(long)) == 0) {
+				if (memcpy_s((void*)&data, sizeof(long), (const void*)&headerbuffer.floatsize, sizeof(char) * 4) == 0) {
 					switch (data) {
 					case XOFFILE_FORMAT_FLOAT_BITS_32:
 						floatsize = 32;
-						return TRUE;
+						break;
 					case XOFFILE_FORMAT_FLOAT_BITS_64:
 						floatsize = 64;
+#ifdef _WINDOWS
+						MessageBox(nullptr, L"64 bit float not supported at this time.", L"Error", MB_OK);
+#else
 						std::cout << "64 bit float not supported at this time.\n";
-						break;
+#endif
+						return FALSE;
+					default:
+#ifdef _WINDOWS
+						MessageBox(nullptr, L"Unknown float size.", L"Error", MB_OK);
+#else
+						std::cout << "Unknown float size.\n";
+#endif
+						return FALSE;
 					}
 				}
 			}
+			else {
+#ifdef _WINDOWS
+				MessageBox(nullptr, L"Unable to read X file header.", L"Error", MB_OK);
+#else
+				std::cout << "Unable to read X file header.\n";
+#endif
+				return FALSE;
+			}
 		}
-		return FALSE;
+		return TRUE;
 	}
 
 	BOOL cXFile::ParseFile(BOOL btrack)
