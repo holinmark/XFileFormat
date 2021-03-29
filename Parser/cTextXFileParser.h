@@ -56,7 +56,7 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory functioncalls;
 		
 		BOOL GetChar();
-		BOOL GetXFileHeader();
+		//BOOL GetXFileHeader();
 		BOOL GetTemplateName(char*, std::size_t);
 		BOOL GetDigit(char*, std::size_t);
 		BOOL GetSignedDigit(char*, std::size_t);

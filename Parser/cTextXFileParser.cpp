@@ -41,32 +41,46 @@ namespace ns_HoLin
 		trackoutput = btrack;
 		sfile.hfile = hfile;
 		while (TRUE) {
-			if (GetChar()) {
-				if (IsWhiteSpace(this, (int)sfile.ch))
-					continue;
-				else if (sfile.ch == '/') {
-					if (GetComment()) {
-						continue;
-					}
-				}
-				else if (std::isalpha((int)sfile.ch)) {
-					buff[0] = sfile.ch;
-					buff[1] = '\0';
-					if (GetReservedWord(&buff[1], blen - 1, '{')) {
-						if (ExtractTemplates(buff, blen))
-							continue;
-					}
-					return PrintOffendingLine("\n%s \'%s\' %zu %u\n", "Error unknown string", buff, linenumber, __LINE__);
-				}
-				else {
-					return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
-				}
+			if (!GetChar()) {
+				if (endoffile)
+					return TRUE;
+				else
+					break;
 			}
 			if (endoffile) {
 				return TRUE;
 			}
+			if (IsWhiteSpace(this, (int)sfile.ch))
+				continue;
+			else if (sfile.ch == '/') {
+				if (GetComment()) {
+					if (endoffile) {
+						return TRUE;
+					}
+					else {
+						continue;
+					}
+				}
+				else {
+					break;
+				}
+			}
+			else if (std::isalpha((int)sfile.ch)) {
+				buff[0] = sfile.ch;
+				buff[1] = '\0';
+				if (GetReservedWord(&buff[1], blen - 1, '{')) {
+					if (!ExtractTemplates(buff, blen)) {
+						break;
+					}
+				}
+				else {
+					return PrintOffendingLine("\n%s \'%s\'%s%zu\n%u\n",
+						"Error extracting string", buff, "\nLine :", linenumber, __LINE__);
+				}
+			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unknown token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
+					"Unknown token", sfile.ch, "\nLine : ", linenumber, __LINE__);
 			}
 		}
 		return FALSE;
@@ -86,21 +100,26 @@ namespace ns_HoLin
 	{
 		if (sfile.GetNextCharFromBuffer(trackoutput)) {
 			if (sfile.ch == '\r') {
-				if (sfile.GetNextCharFromBuffer(trackoutput) == FALSE)
+				if (sfile.GetNextCharFromBuffer(trackoutput) == FALSE) {
 					return FALSE;
+				}
 			}
 			if (sfile.ch == '\n') {
 				linenumber++;
 			}
-			if (trackoutput)
+			if (trackoutput) {
+#ifdef _CONSOLE
 				std::clog << sfile.ch;
+#endif
+			}
 			return TRUE;
 		}
-		if (sfile.bytes_read_from_file == 0)
+		if (sfile.bytes_read_from_file == 0) {
 			endoffile = TRUE;
+		}
 		return FALSE;
 	}
-
+	/*
 	BOOL cTextXFileParser::GetXFileHeader()
 	{
 #ifdef FUNCTIONCALLSTACK
@@ -126,12 +145,12 @@ namespace ns_HoLin
 		std::clog << "\nHeader read.\n";
 		memset((void*)&headerbuffer, 0, sizeof(sXFileHeader));
 		if (memcpy_s((void*)&headerbuffer, datasize, (const void*)sfile.file_buffer, datasize) != 0) {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Error reading x file header.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%s%zu\n%u\n", "Error reading x file header.", "\nLine : ", linenumber, __LINE__);
 		}
 		sfile.index_of_next_char_to_read += datasize;
 		memcpy_s((void*)&headerdata, sizeof(long), (const void*)&headerbuffer.magic_number, sizeof(long));
 		if (headerdata != XOFFILE_FORMAT_MAGIC) {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Not an x file format.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Not an x file format.\nLine : ", linenumber, __LINE__);
 		}
 		memcpy_s((void*)&headerdata, sizeof(long), (const void*)headerbuffer.format_type, sizeof(long));
 		if (headerdata == XOFFILE_FORMAT_TEXT) {
@@ -140,13 +159,13 @@ namespace ns_HoLin
 		}
 		else if (headerdata == XOFFILE_FORMAT_BINARY) {
 			textfile = FALSE;
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Binary format unsupported at this time.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Binary format unsupported at this time.\nLine : ", linenumber, __LINE__);
 		}
 		else if (headerdata == XOFFILE_FORMAT_COMPRESSED) {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Compressed file format unsupported.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Compressed file format unsupported.\nLine : ", linenumber, __LINE__);
 		}
 		else {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Unknown file format.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Unknown file format.\nLine : ", linenumber, __LINE__);
 		}
 		memcpy_s((void*)&headerdata, sizeof(long), (const void*)headerbuffer.float_size, sizeof(long));
 		if (headerdata == XOFFILE_FORMAT_FLOAT_BITS_32) {
@@ -154,11 +173,11 @@ namespace ns_HoLin
 		}
 		else if (headerdata == XOFFILE_FORMAT_FLOAT_BITS_64) {
 			mode32bit = FALSE;
-			return PrintOffendingLine("\n%s\n%zu %u\n", "64 bit floating point not supported at this time.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "64 bit floating point not supported at this time.\nLine : ", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
-
+	*/
 	BOOL cTextXFileParser::GetTemplateName(char *buff, std::size_t blen)
 	{
 #ifdef FUNCTIONCALLSTACK
@@ -177,7 +196,8 @@ namespace ns_HoLin
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\' %s %zu %u\n", "Error unknown token", sfile.ch, "line number", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n", "Error unknown token",
+						sfile.ch, "\nLine : ", linenumber, __LINE__);
 				}
 			}
 		}
@@ -203,13 +223,15 @@ namespace ns_HoLin
 					return TRUE;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\' %s \'{\'\n%zu %u\n", "Error unexpected token", sfile.ch, "expecting", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\' %s \'{\'%s%zu\n%u\n",
+						"Error unexpected token", sfile.ch, "expecting", "\nLine : ", linenumber, __LINE__);
 				}
 			}
 			if (GetNextToken('{'))
 				return TRUE;
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error buffer overload.", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%s%zu\n%u\n",
+			"Error buffer overload.", "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetDigit(char *buff, std::size_t blen)
@@ -244,7 +266,7 @@ namespace ns_HoLin
 				break;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n", "Unexpected token", sfile.ch, "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetSignedDigit(char *buff, std::size_t blen)
@@ -274,11 +296,13 @@ namespace ns_HoLin
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\' %zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
+						"Unexpected token", sfile.ch, "\nLine : ", linenumber, __LINE__);
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s %zu %u\n", "Unexpected end of file ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%s%zu\n%u\n",
+					"Unexpected end of file.", "\nLine : ", linenumber, __LINE__);
 			}
 		}
 		return FALSE;
@@ -310,7 +334,8 @@ namespace ns_HoLin
 			if (GetNextToken('}'))
 				return TRUE;
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
+			"Unexpected token", sfile.ch, "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetFrameTransformMatrix(char *buff, std::size_t blen, DirectX::XMFLOAT4X4 &matrix)
@@ -329,7 +354,8 @@ namespace ns_HoLin
 					return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
+			"Unexpected token", sfile.ch, "\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetReservedWord(char *buff, std::size_t blen, char token)
@@ -355,14 +381,17 @@ namespace ns_HoLin
 					return GetComment();
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'%s%zu\n%u\n",
+						"Unknown token", sfile.ch, "\nLine : ", linenumber, __LINE__);
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s %zu %u\n", "Unexpected end of file ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s\n%s%zu\n%u\n",
+					"Unexpected end of file.", "Line : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error buffer overload", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s %zu\n%u\n",
+			"Error buffer overload.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetName(char *buff, std::size_t blen, char sep)
@@ -374,7 +403,7 @@ namespace ns_HoLin
 		
 		while (TRUE) {
 			if (GetChar() == FALSE) {
-				return PrintOffendingLine("\n%s %zu %u\n", "Error : linenumber", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 			}
 			if (std::isalnum((int)sfile.ch) || sfile.ch == '_' || sfile.ch == '-' || sfile.ch == '.') {
 				break;
@@ -383,10 +412,12 @@ namespace ns_HoLin
 				continue;
 			}
 			else if (sfile.ch == '}') {
-				return PrintOffendingLine("\n%s %zu\n%s %u\n", "Error no string input line number :", linenumber, __FILE__, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n",
+					"Error no string input.\nLine :", linenumber, __LINE__);
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unknown token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n",
+					"Error unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
 		buff[0] = sfile.ch;
@@ -421,11 +452,13 @@ namespace ns_HoLin
 						return TRUE;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n",
+						"Unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s %zu %u\n", "Unexpected end of file ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n",
+					"Unexpected end of file.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		return PrintOffendingLine(NULL);
@@ -446,7 +479,8 @@ namespace ns_HoLin
 			else if (sfile.ch == '"')
 				break;
 			else {
-				return PrintOffendingLine("\n%s\n%zu %u\n", "Error expecting a string. ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n",
+					"Error expecting a string.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		for (std::size_t i = 0; i < limit; ++i) {
@@ -454,10 +488,11 @@ namespace ns_HoLin
 				return FALSE;
 			if (sfile.ch == '"') {
 				if (i == 0) {
-					return PrintOffendingLine("\n%s\n%zu %u\n", "Error string length zero declared.", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s%zu\n%u\n",
+						"Error string length zero declared.\nLine : ", linenumber, __LINE__);
 				}
 				if (GetNextToken(sep) == FALSE)
-					return PrintOffendingLine("|n%s \'%c\'\n%zu %u\n", "Error expecting token", sep, linenumber, __LINE__);
+					return PrintOffendingLine("|n%s \'%c\'\n%s%zu\n%u\n", "Error expecting token", sep, "Line : ", linenumber, __LINE__);
 				return TRUE;
 			}
 			else if (std::isalnum((int)sfile.ch) || std::ispunct((int)sfile.ch)) {
@@ -466,11 +501,12 @@ namespace ns_HoLin
 			}
 			else {
 				if (sfile.ch == '\n' || sfile.ch == '\r')
-					return PrintOffendingLine("\n%s %zu %u\n", "Error unexpected carriage return line number", linenumber, __LINE__);
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error extracting string. Unknown character",  sfile.ch, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s %zu\n%u\n", "Error unexpected carriage return.\nLine : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n",
+					"Error extracting string. Unknown character",  sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error : buffer overload.", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error : buffer overload.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetColorRGBA(char *buff, std::size_t blen, DirectX::XMFLOAT4 &c)
@@ -542,7 +578,7 @@ namespace ns_HoLin
 				return FALSE;
 			return TRUE;
 		}
-		return PrintOffendingLine("\n%s \'%s\'\n%zu %u\n", "Unknown identifier", buff, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown identifier", buff, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMaterialBody(char *buff, std::size_t blen, ns_HoLin::sMaterial *p_material)
@@ -593,10 +629,10 @@ namespace ns_HoLin
 					return FALSE;
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error GetMaterialBody", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error GetMaterialBody.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetUnsignedInteger(char *buff, std::size_t blen, void *plist)
@@ -628,7 +664,7 @@ namespace ns_HoLin
 				if (pmesh->p_extra->smeshmateriallist[i].name == std::string(buff))
 					return TRUE;
 			}
-			PrintOffendingLine("\n%s%s%s%zu %u%s", "Error could not find material named \'", buff, "\'\n", linenumber, __LINE__, "\n\n");
+			PrintOffendingLine("\n%s%s%s%zu\n%u\n", "Error could not find material named \'", buff, "\'\nLine : ", linenumber, __LINE__);
 		}
 		else if (sfile.ch == 'M') {
 			buff[0] = sfile.ch;
@@ -644,10 +680,10 @@ namespace ns_HoLin
 				return TRUE;
 			}
 			else {
-				PrintOffendingLine("\n%s \'%s\'\n%zu %u\n", "Unknown token", buff, linenumber, __LINE__);
+				PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown token", buff, "Line : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshMaterialListBody(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
@@ -682,9 +718,9 @@ namespace ns_HoLin
 				return FALSE;
 		}
 		if (nmaterials != pmesh->p_extra->smeshmateriallist.size()) {
-			return PrintOffendingLine("\n%s %zu %s %u %s\n%zu %u\n",
+			return PrintOffendingLine("\n%s %zu %s %u %s%zu\n%u\n",
 				"Error expecting", pmesh->p_extra->smeshmateriallist.size(), "materials got", nmaterials,
-				"materials.", linenumber, __LINE__);
+				"materials.\nLine : ", linenumber, __LINE__);
 		}
 		if (GetNextToken('}') == FALSE)
 			return FALSE;
@@ -719,7 +755,7 @@ namespace ns_HoLin
 		if (strlen(buff) > 0)
 			p_material->name = buff;
 		else {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Material template not named.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s\n%zu\n%u\n", "Material template not named.\nLine : ", linenumber, __LINE__);
 		}
 		return GetMaterialBody(buff, blen, p_material);
 	}
@@ -758,10 +794,10 @@ namespace ns_HoLin
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s\n%zu %u\n", "Unexpected end of file.", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file.\nLine : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s\n%zu %u\n", "Buffer overflow.", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Buffer overflow.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetExponent(char *buff, std::size_t blen)
@@ -812,7 +848,7 @@ namespace ns_HoLin
 				return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s\n%zu %u\n", "Error buffer overflow.", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error buffer overflow.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetInteger(char *buff, std::size_t blen)
@@ -974,7 +1010,7 @@ namespace ns_HoLin
 				return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unexpecting token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpecting token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetFaces(char *buff, std::size_t blen, ns_HoLin::sMeshFaces &meshfaces)
@@ -1001,7 +1037,7 @@ namespace ns_HoLin
 			meshfaces.numofindices = (DWORD)number_of_indices;
 			return TRUE;
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error expecting \';\', got", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting \';\', got", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetArray(char *buff, std::size_t blen, void *plist, DWORD number_of_entries, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*), BOOL getnextinput)
@@ -1021,7 +1057,10 @@ namespace ns_HoLin
 					if ((i + 1) == number_of_entries)
 						break;
 					else {
-						return PrintOffendingLine("\n%s %u %s %u\n%zu %u\n", "Error expected", number_of_entries, "got", (i + 1), linenumber, __LINE__);
+						return PrintOffendingLine("\n%s %u %s %u\n%s%zu\n%u\n", "Error expecting", number_of_entries,
+							"got",
+							(i + 1),
+							"Line : ", linenumber, __LINE__);
 					}
 				}
 				if (GetNextInput(IsValidSeperator) == FALSE)
@@ -1032,14 +1071,14 @@ namespace ns_HoLin
 					if ((i + 1) == number_of_entries)
 						break;
 					else {
-						return PrintOffendingLine("\n%s %zu %u\n", "Error ", linenumber, __LINE__);
+						return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 					}
 				}
 			}
 		}
 		if (sfile.ch == ';' || sfile.ch == ',')
 			return TRUE;
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::Get2DArray(char *buff, std::size_t blen, void *plist, DWORD rows, DWORD cols, BOOL(cTextXFileParser::*pCallBackFunction)(char*, std::size_t, void*, DWORD, DWORD))
@@ -1054,20 +1093,20 @@ namespace ns_HoLin
 					return FALSE;
 				if (IsWhiteSpace(this, (int)sfile.ch)) {
 					if (GetNextInput(IsValidSeperator) == FALSE) {
-						return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
+						return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 					}
 				}
 				if (sfile.ch == ',')
 					continue;
 				if (sfile.ch == ';') {
 					if (i != j) {
-						return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+						return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 					}
 					else
 						continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unknown token", sfile.ch, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 				}
 			}
 		}
@@ -1149,7 +1188,7 @@ namespace ns_HoLin
 				return FALSE;
 			}
 			if (std::isalpha((int)sfile.ch)) {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
 		if (sfile.ch == '{') {
@@ -1161,13 +1200,13 @@ namespace ns_HoLin
 						if (sfile.ch == '}')
 							return TRUE;
 						else {
-							return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error expecting \'}\' got", sfile.ch, linenumber, __LINE__);
+							return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting \'}\' got", sfile.ch, "Line : ", linenumber, __LINE__);
 						}
 					}
 				}
 			}
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error : linenumber", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s %zu\n%u\n", "Error : linenumber", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetCoord2D(char *buff, std::size_t blen, void *plist)
@@ -1309,7 +1348,7 @@ namespace ns_HoLin
 					return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetVertexDuplicationIndicesBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
@@ -1341,7 +1380,7 @@ namespace ns_HoLin
 			}
 		}
 		else {
-			return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error expecting token \';\' got", sfile.ch, linenumber, __LINE__);
+			return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error expecting token \';\' got", sfile.ch, "Line : ", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
@@ -1361,7 +1400,7 @@ namespace ns_HoLin
 				return FALSE;
 		}
 		else {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Error, mesh memory not allocated.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Error, mesh memory not allocated.\nLine : ", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
@@ -1386,7 +1425,7 @@ namespace ns_HoLin
 				return TRUE;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshVertexColorsBody(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
@@ -1397,7 +1436,7 @@ namespace ns_HoLin
 		DWORD nVertexColors; // should equal number of polygons in mesh
 
 		if (pmesh == NULL)
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Error no mesh declared.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Error no mesh declared.\nLine : ", linenumber, __LINE__);
 		if (GetUnsignedInteger(buff, blen, ';') == FALSE)
 			return FALSE;
 		nVertexColors = (DWORD)std::atoi(buff);
@@ -1407,7 +1446,7 @@ namespace ns_HoLin
 			}
 			return FALSE;
 		}
-		return PrintOffendingLine("\n%s\n%zu %u\n", "Error number of colors and number of polygons do not match.", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error number of colors and number of polygons do not match.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshVertexColors(char *buff, std::size_t blen, ns_HoLin::sMesh *pmesh)
@@ -1442,12 +1481,12 @@ namespace ns_HoLin
 				if (p_mesh->p_extra == nullptr) {
 					p_mesh->p_extra = new ns_HoLin::sMeshExtraAttributes;
 					if (p_mesh->p_extra == NULL)
-						return PrintOffendingLine("\n%s\n%zu %u\n", "Error unable to allocate memory. ", linenumber, __LINE__);
+						return PrintOffendingLine("\n%s %zu\n%u\n", "Error unable to allocate memory.\nLine : ", linenumber, __LINE__);
 				}
 				if (strcmp(buff, "MeshMaterialList") == 0) {
 					if (GetMeshMaterialList(buff, blen, p_mesh))
 						return TRUE;
-					return PrintOffendingLine("\n%s %zu %u\n", "Error : linenumber", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 				}
 				else if (strcmp(buff, "MeshNormals") == 0) {
 					return GetMeshNormals(buff, blen, &p_mesh->p_extra->meshnormals);
@@ -1459,7 +1498,7 @@ namespace ns_HoLin
 						p_mesh->p_extra->list_of_matrices.emplace_back(matrix);
 						return TRUE;
 					}
-					return PrintOffendingLine("\n%s %zu %u\n", "Error : linenumber", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 				}
 				else if (strcmp(buff, "MeshTextureCoords") == 0) {
 					return GetMeshTextureCoord(buff, blen, p_mesh->p_extra->texturecoord);
@@ -1474,7 +1513,7 @@ namespace ns_HoLin
 					if (p_mesh->p_extra->p_skininfo == nullptr) {
 						p_mesh->p_extra->p_skininfo = new ns_HoLin::sSkinInfo;
 						if (p_mesh->p_extra->p_skininfo == nullptr) {
-							return PrintOffendingLine("\n%s\n%zu %u\n", "Error unable to allocate memory. ", linenumber, __LINE__);
+							return PrintOffendingLine("\n%s%zu\n%u\n", "Error unable to allocate memory.\nLine : ", linenumber, __LINE__);
 						}
 					}
 					return GetSkinWeights(buff, blen, p_mesh);
@@ -1482,23 +1521,23 @@ namespace ns_HoLin
 				else if (strcmp(buff, "XSkinMeshHeader") == 0) {
 					if (p_mesh->p_extra->p_skininfo) {
 						if (p_mesh->p_extra->p_skininfo->skin_header.nBones > 0) {
-							return PrintOffendingLine("\n%s\n%zu %u\n", "Template XSkinMeshHeader already declared ", linenumber, __LINE__);
+							return PrintOffendingLine("\n%s%zu\n%u\n", "Template XSkinMeshHeader already declared.\nLine : ", linenumber, __LINE__);
 						}
 					}
 					else {
 						p_mesh->p_extra->p_skininfo = new ns_HoLin::sSkinInfo;
 						if (p_mesh->p_extra->p_skininfo == nullptr) {
-							return PrintOffendingLine("\n%s\n%zu %u\n", "Error unable to allocate memory. ", linenumber, __LINE__);
+							return PrintOffendingLine("\n%s%zu\n%u\n", "Error unable to allocate memory.\nLine : ", linenumber, __LINE__);
 						}
 					}
 					return GetXSkinMeshHeader(buff, blen, p_mesh);
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%s\'\n%zu %u\n", "Unknown word", buff, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown word", buff, "Line : ", linenumber, __LINE__);
 				}
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetMeshBody(char *buff, std::size_t blen, ns_HoLin::sMesh *p_mesh)
@@ -1521,7 +1560,7 @@ namespace ns_HoLin
 		while (TRUE) {
 			if (GetNextInput(IsValidEntry) == FALSE) {
 				if (endoffile) {
-					return PrintOffendingLine("\n%s\n%zu %u\n", "Unexpected end of file. Possibly missing \'}\' ", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file. Possibly missing \'}\'\nLine : ", linenumber, __LINE__);
 				}
 				return FALSE;
 			}
@@ -1538,10 +1577,10 @@ namespace ns_HoLin
 					if (xfiledata.smateriallist[i].name == std::string(buff))
 						return TRUE;
 				}
-				return PrintOffendingLine("\n%s \'%s\'\n%zu %u%s", "Error could not find material", buff, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Error could not find material", buff, "Line : ", linenumber, __LINE__);
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u%s", "Error, unexpected token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error, unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
 		return TRUE;
@@ -1605,7 +1644,7 @@ namespace ns_HoLin
 				return PrintOffendingLine(NULL);
 		}
 		else {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Unable to allocate memory. ", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
@@ -1643,11 +1682,11 @@ namespace ns_HoLin
 					return FALSE;
 			}
 			else {
-				return PrintOffendingLine("\n%s\n%zu %u\n", "Unable to allocate memory.", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		else {
-			return PrintOffendingLine("\n%s \'%s\'\n%zu %u\n", "Unknown word", buff, linenumber, __LINE__);
+			return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown word", buff, "Line : ", linenumber, __LINE__);
 		}
 		return FALSE;
 	}
@@ -1667,7 +1706,7 @@ namespace ns_HoLin
 					pseq = xfiledata.sframeslist.SearchSequence(std::string(buff));
 					if (pseq == nullptr) {
 						if (xfiledata.smeshlist.Find(std::string(buff)) == FALSE) {
-							return PrintOffendingLine("\n%s \'%s\'\n%zu %u\n", "Error could not find object reference", buff, linenumber, __LINE__);
+							return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Error could not find object reference", buff, "Line : ", linenumber, __LINE__);
 						}
 						pframe->mesh.emplace_back(std::string(buff));
 					}
@@ -1691,17 +1730,17 @@ namespace ns_HoLin
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\' %zu %u%s\n", "Encountered error. Unknown token", sfile.ch, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Encountered error. Unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 				}
 			}
 			else {
 				if (endoffile) {
-					return PrintOffendingLine("\n%s %zu %u\n", "Unexpected end of file", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file.\nLine : ", linenumber, __LINE__);
 				}
 				break;
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\' %zu %u\n", "Error unknown token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetFrame(char *buff, std::size_t blen, ns_HoLin::sSequenceOfFrames *pseq)
@@ -1728,7 +1767,7 @@ namespace ns_HoLin
 			pframe->name = name;
 			return GetFrameBody(buff, blen, pframe);
 		}
-		return PrintOffendingLine("\n%s.\n%zu %u\n", "Unable to allocate memory", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetFloatKeysBody(char *buff, std::size_t blen, void *v)
@@ -1757,16 +1796,16 @@ namespace ns_HoLin
 				if ((i + 1) == number_of_entries)
 					continue;
 				else {
-					return PrintOffendingLine("\n%s %u %s %u\n%zu %u\n", "Error expecting", number_of_entries, "timed float keys, got", i, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s %u %s %u\n%s%zu\n%u\n", "Error expecting", number_of_entries, "timed float keys, got", i, "Line : ", linenumber, __LINE__);
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
 		if (sfile.ch == ';')
 			return TRUE;
-		return PrintOffendingLine("\n%s \'%c\' %zu %u\n", "Unexpected token", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetTimedFloatKeys(char *buff, std::size_t blen, void *v)
@@ -1803,7 +1842,7 @@ namespace ns_HoLin
 			return FALSE;
 		p_anim_data->type_of_transform = (DWORD)atoi(buff);
 		if (p_anim_data->type_of_transform >= 3) {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Error transform type must be 0, 1, or 2", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Error transform type must be 0, 1, or 2.\nLine : ", linenumber, __LINE__);
 		}
 		if (GetUnsignedInteger(buff, blen) == FALSE)
 			return FALSE;
@@ -1851,7 +1890,7 @@ namespace ns_HoLin
 		DWORD openclosed = (DWORD)std::atoi(buff);
 
 		if (openclosed > 1) {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Error AnimationOptions, is either open or closed.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Error AnimationOptions, is either open or closed.\nLine : ", linenumber, __LINE__);
 		}
 		if (GetUnsignedInteger(buff, blen) == FALSE)
 			return FALSE;
@@ -1861,7 +1900,7 @@ namespace ns_HoLin
 		}
 		DWORD positionquality = (DWORD)std::atoi(buff);
 		if (positionquality > 1) {
-			return PrintOffendingLine("\n%s\n%zu %u\n", "Error AnimationOptions, position quality is either linear or spline.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Error AnimationOptions, position quality is either linear or spline.\nLine : ", linenumber, __LINE__);
 		}
 		if (sfile.ch != '}') {
 			if (GetNextToken('}') == FALSE)
@@ -1896,13 +1935,13 @@ namespace ns_HoLin
 				if (GetName(buff, blen, '}') == FALSE)
 					break;
 				if (strlen(buff) == 0) {
-					return PrintOffendingLine("\n%s %zu %u\n", "Error no name entry.", linenumber, __LINE__);
+					return PrintOffendingLine("\n%s%zu\n%u\n", "Error no name entry.\nLine : ", linenumber, __LINE__);
 				}
 				std::string s(buff);
 				
 				if (xfiledata.sframeslist.FindFrames(s) == FALSE) {
 					if (xfiledata.smeshlist.Find(s) == FALSE) {
-						return PrintOffendingLine("\n%s\'%s\'\n%zu %u\n", "Could not find object reference", buff, linenumber, __LINE__);
+						return PrintOffendingLine("\n%s\'%s\'\n%s%zu\n%u\n", "Could not find object reference", buff, "Line : ", linenumber, __LINE__);
 					}
 				}
 				p_animation->list_of_objects.emplace_back(s);
@@ -1916,7 +1955,7 @@ namespace ns_HoLin
 					ns_HoLin::sAnimation_Data *p_anim_data = p_animation->CreateAnimation_Data();
 
 					if (p_anim_data == nullptr) {
-						return PrintOffendingLine("\n%s %zu %u\n", "Unable to allocate memory.", linenumber, __LINE__);
+						return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 					}
 					if (GetAnimationKey(buff, blen, p_anim_data) == FALSE)
 						return FALSE;
@@ -1926,14 +1965,14 @@ namespace ns_HoLin
 						return FALSE;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%s\'\n%zu %u\n", "Unknown token", buff, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown token", buff, "Line : ", linenumber, __LINE__);
 				}
 			}
 			else if (sfile.ch == '}') {
 				return TRUE;
 			}
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
 		return PrintOffendingLine(NULL);
@@ -1958,7 +1997,7 @@ namespace ns_HoLin
 		name = buff;
 		if (sfile.ch != '{') {
 			if (GetNextToken('{') == FALSE) {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Error unexpected token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
 		if (pset) {
@@ -1968,12 +2007,12 @@ namespace ns_HoLin
 			p_animation = xfiledata.sanimationsetlist.CreateAnimation();
 		}
 		if (p_animation == nullptr) {
-			return PrintOffendingLine("\n%s %zu %u\n", "Unable to allocate memory.", linenumber, __LINE__);
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 		}
 		p_animation->name = std::move(name);
 		if (GetAnimationBody(buff, blen, p_animation))
 			return TRUE;
-		return PrintOffendingLine("\n%s %zu %u\n", "Error : linenumber", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 	}
 	
 	BOOL cTextXFileParser::GetAnimationSetBody(char *buff, std::size_t blen, sAnimationSet *pset)
@@ -1995,16 +2034,16 @@ namespace ns_HoLin
 						break;
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%s\'\n%zu %u\n", "Error expecting \'Animation\', but got", buff, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Error expecting \'Animation\', but got", buff, "Line : ", linenumber, __LINE__);
 				}
 			}
 			else if (sfile.ch == '}')
 				return TRUE;
 			else {
-				return PrintOffendingLine("\n%s \'%c\'\n%zu %u\n", "Unknown token", sfile.ch, linenumber, __LINE__);
+				return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Unknown token", sfile.ch, "Line : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error : linenumber", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetAnimationSet(char *buff, std::size_t blen)
@@ -2030,7 +2069,7 @@ namespace ns_HoLin
 			pset->name = std::move(name);
 			return GetAnimationSetBody(buff, blen, pset);
 		}
-		return PrintOffendingLine("\n%s\n%zu %u\n", "Error allocating memory.", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error allocating memory.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetAnimTicksPerSecond(char *buff, std::size_t blen)
@@ -2066,7 +2105,7 @@ namespace ns_HoLin
 				return GetMesh(buff, blen, p_mesh);
 			}
 			else {
-				return PrintOffendingLine("\n%s\n%zu %u\n", "Unable to allocate memory.", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		else if (strcmp(buff, "Frame") == 0) {
@@ -2076,7 +2115,7 @@ namespace ns_HoLin
 				return GetFrame(buff, blen, pseq);
 			}
 			else {
-				return PrintOffendingLine("\n%s\n%zu %u\n", "Unable to allocate memory.", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n", "Unable to allocate memory.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		else if (strcmp(buff, "Material") == 0) {
@@ -2087,7 +2126,7 @@ namespace ns_HoLin
 				return TRUE;
 			}
 			else {
-				return PrintOffendingLine("\n%s\n%zu %u\n", "GetMaterial failure.", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n", "GetMaterial failure.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		else if (strcmp(buff, "AnimationSet") == 0) {
@@ -2099,7 +2138,7 @@ namespace ns_HoLin
 		else if (strcmp(buff, "Animation") == 0) {
 			return GetAnimation(buff, blen);
 		}
-		return PrintOffendingLine("\n%s \'%s\' %zu %u\n", "Unknown tempate", buff, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%s\'\n%s%zu\n%u\n", "Unknown tempate", buff, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::Recovery(char *buff, std::size_t blen, char expected_char, char got_char)
@@ -2109,7 +2148,7 @@ namespace ns_HoLin
 #endif
 		std::string error_string;
 		
-		sprintf_s(buff, blen, "\n%s %zu\n%s \'%c\' %s \'%c\'\n", "Error : line number", linenumber, "Expecting", expected_char, "got", got_char);		
+		sprintf_s(buff, blen, "\n%s %zu\n%s \'%c\' %s \'%c\'\n", "Error : line number", linenumber, "Expecting", expected_char, "got", got_char);
 		while (sfile.ch != '\n' || sfile.ch != '\r') {
 			if (GetChar() == FALSE)
 				return FALSE;
@@ -2140,7 +2179,8 @@ namespace ns_HoLin
 		}
 		if (sfile.ch == token)
 			return TRUE;
-		return PrintOffendingLine("\n%s \'%c\' %s \'%c\' %zu %u\n\n", "Error unexpected token", sfile.ch, "expecting", token, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\' %s \'%c\'\n%s%zu\n%u\n\n",
+			"Error unexpected token", sfile.ch, "expecting", token, "Line : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetCarriageReturn()
@@ -2151,11 +2191,11 @@ namespace ns_HoLin
 
 		if (GetChar()) {
 			if (sfile.ch != '\n') {
-				return PrintOffendingLine("\n%s\n%zu %u%s", "Unexpected carriage return.", linenumber, __LINE__, "\n\n");
+				return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected carriage return.\nLine : ", linenumber, __LINE__);
 			}
 		}
 		else {
-			return PrintOffendingLine("\n%s\n%zu %u%s", "Unexpected end of file.", linenumber, __LINE__, "\n\n");
+			return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file.\nLine : ", linenumber, __LINE__);
 		}
 		return TRUE;
 	}
@@ -2183,7 +2223,7 @@ namespace ns_HoLin
 				break;
 			}
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error line number", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetComment()
@@ -2198,10 +2238,10 @@ namespace ns_HoLin
 					return TRUE;
 			}
 			else {
-				return PrintOffendingLine("\n%s%c%s\n%zu %u%s", "Unexpected token \'", sfile.ch, "\'.", linenumber, __LINE__, "\n\n");
+				return PrintOffendingLine("\n%s%c%s\n%zu\n%u\n", "Unexpected token \'", sfile.ch, "\'.\nLine : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s\n%zu %u%s", "Unexpected end of file.", linenumber, __LINE__, "\n\n");
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetNextInput(std::function<BOOL(int)> func)
@@ -2230,14 +2270,16 @@ namespace ns_HoLin
 					continue;
 				}
 				else {
-					return PrintOffendingLine("\n%s%c%s\n%zu %u%s", "Unexpected token \'", sfile.ch, "\'.", linenumber, __LINE__, "\n\n");
+					return PrintOffendingLine("\n%s%c%s%zu\n%u\n", "Unexpected token \'", sfile.ch, "\'.\nLine : ", linenumber, __LINE__);
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s\n%zu %u%s", "Error.", linenumber, __LINE__, "\n\n");
+				if (endoffile)
+					return PrintOffendingLine("\n%s%zu\n%u\n", "Unexpected end of file error.\nLine : ", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s %zu %u\n", "Error line number", linenumber, __LINE__);
+		return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 	}
 
 	BOOL cTextXFileParser::GetNextToken(const char token)
@@ -2256,27 +2298,24 @@ namespace ns_HoLin
 					if (GetComment())
 						continue;
 					else {
-						return PrintOffendingLine("\n%s %zu %u\n", "Error line number", linenumber, __LINE__);
+						return PrintOffendingLine("\n%s%zu\n%u\n", "Error.\nLine : ", linenumber, __LINE__);
 					}
 				}
 				else {
-					return PrintOffendingLine("\n%s \'%c\' %s \'%c\' %zu %u\n", "Error unexpected token", sfile.ch, "expecting", token, linenumber, __LINE__);
+					return PrintOffendingLine("\n%s \'%c\' %s \'%c\'\n%s%zu\n%u\n", "Error unexpected token", sfile.ch, "expecting", token, "Line : ", linenumber, __LINE__);
 				}
 			}
 			else {
-				return PrintOffendingLine("\n%s %zu %u", "Error unexpected end of file.", linenumber, __LINE__);
+				return PrintOffendingLine("\n%s%zu\n%u", "Error unexpected end of file.\nLine : ", linenumber, __LINE__);
 			}
 		}
-		return PrintOffendingLine("\n%s \'%c\' %zu %u\n\n", "Error line number expecting", sfile.ch, linenumber, __LINE__);
+		return PrintOffendingLine("\n%s \'%c\'\n%s%zu\n%u\n", "Error line number expecting", sfile.ch, "Line : ", linenumber, __LINE__);
 	}
 	
 	void cTextXFileParser::GetOffendingLine(std::string &before, std::string &after)
 	{
 		DWORD index = 0, count = 0;
 		
-		if (trackoutput) {
-			//std::cout << sfile.file_buffer;
-		}
 		for (index = sfile.index_of_next_char_to_read; index < sfile.page_size_in_bytes; ++index) {
 			if (sfile.file_buffer[index] == '\n')
 				break;

@@ -51,7 +51,7 @@ namespace ns_HoLin
 					std::cerr << "Error -f option, no file name entered, exiting.\n";
 					return FALSE;
 				}
-				arguments_options[map_options[state_strings[1]]] = std::wstring(argc[++i]);
+				arguments_options[map_options[state_strings[1]]] = std::wstring((const wchar_t*)argc[++i]);
 			}
 			else {
 				std::wcerr << L"Quitting unknown command \'" << (const wchar_t*)argc[i] << L"\'\n";
@@ -59,7 +59,8 @@ namespace ns_HoLin
 			}
 		}
 		if (arguments_options[map_options[state_strings[1]]].has_value()) {
-			this->openfile(std::any_cast<std::wstring>(arguments_options[map_options[state_strings[1]]]).c_str());
+			if (!this->openfile(std::any_cast<std::wstring>(arguments_options[map_options[state_strings[1]]]).c_str()))
+				return FALSE;
 		}
 		if (!hfile) {
 			OpenFileWithMeshFileName();
@@ -154,6 +155,14 @@ namespace ns_HoLin
 		hfile = CreateFile(file_name, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 		if (hfile != INVALID_HANDLE_VALUE)
 			return true;
+#if defined(_CONSOLE)
+		std::wcout << L"Error could not locate " << file_name << L'\n';
+#endif
+#if defined(_WINDOWS)
+		std::wstring s(L"Error could not locate ");
+		s.append(file_name);
+		MessageBox(nullptr, s.c_str(), L"File error", MB_OK);
+#endif
 		hfile = nullptr;
 		return false;
 	}
@@ -178,9 +187,9 @@ namespace ns_HoLin
 					case XOFFILE_FORMAT_MAGIC:
 						break;
 					default:
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 						MessageBox(nullptr, L"Error not an x file.", L"Error", MB_OK);
-#else
+#elif defined(_CONSOLE)
 						std::cout << "Error not an x file.\n";
 #endif
 						return FALSE;
@@ -191,10 +200,10 @@ namespace ns_HoLin
 					case XOFFILE_FORMAT_VERSION:
 						break;
 					default:
-#ifdef _WINDOWS
-						MessageBox(nullptr, L"Error unknown version.", L"Error", MB_OK);
-#else
-						std::cout << "Error unknown version.\n";
+#if defined(_WINDOWS)
+						MessageBox(nullptr, L"Error unknown version.\r\nOnly version 0303 supported.", L"Error", MB_OK);
+#elif defined(_CONSOLE)
+						std::cout << "Error unknown version.\nOnly version 0303 supported.\n";
 #endif
 						return FALSE;
 					}
@@ -206,25 +215,25 @@ namespace ns_HoLin
 						break;
 					case XOFFILE_FORMAT_BINARY:
 						file_type = BINARY_FILE;
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 						MessageBox(nullptr, L"Binary version not supported at this time.", L"Error", MB_OK);
-#else
+#elif defined(_CONSOLE)
 						std::cout << "Binary version not supported at this time.\n";
 #endif
 						return FALSE;
 					case XOFFILE_FORMAT_COMPRESSED:
 						file_type = ZIP_FILE;
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 						MessageBox(nullptr, L"Can't read compressed file.", L"Error", MB_OK);
-#else
+#elif defined(_CONSOLE)
 						std::cout << "Can't read compressed file.\n";
 #endif
 						return FALSE;
 					default:
-#ifdef _WINDOWS
-						MessageBox(nullptr, L"Error unknown file format.", L"Error", MB_OK);
-#else
-						std::cout << "Error unknown file format.\n";
+#if defined(_WINDOWS)
+						MessageBox(nullptr, L"Header error, unknown file format.", L"Error", MB_OK);
+#elif defined(_CONSOLE)
+						std::cout << "Header error, unknown file format.\n";
 #endif
 						return FALSE;
 					}
@@ -236,16 +245,16 @@ namespace ns_HoLin
 						break;
 					case XOFFILE_FORMAT_FLOAT_BITS_64:
 						floatsize = 64;
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 						MessageBox(nullptr, L"64 bit float not supported at this time.", L"Error", MB_OK);
-#else
+#elif defined(_CONSOLE)
 						std::cout << "64 bit float not supported at this time.\n";
 #endif
 						return FALSE;
 					default:
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 						MessageBox(nullptr, L"Unknown float size.", L"Error", MB_OK);
-#else
+#elif defined(_CONSOLE)
 						std::cout << "Unknown float size.\n";
 #endif
 						return FALSE;
@@ -253,9 +262,9 @@ namespace ns_HoLin
 				}
 			}
 			else {
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 				MessageBox(nullptr, L"Unable to read X file header.", L"Error", MB_OK);
-#else
+#elif defined(_CONSOLE)
 				std::cout << "Unable to read X file header.\n";
 #endif
 				return FALSE;

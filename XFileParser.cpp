@@ -196,7 +196,7 @@ int wmain(DWORD argv, const wchar_t **argc)
 {
 	ns_HoLin::cXFile xfile;
 
-#ifdef _WINDOWS
+#if defined(_WINDOWS)
 	// Win32 application
 	if (xfile.ReadXFile(L"mesh//Five_Wheeler_mesh.txt")) {
 		std::cout << "Success.\n";
@@ -212,7 +212,7 @@ int wmain(DWORD argv, const wchar_t **argc)
 		}
 	}
 #endif
-#ifdef _CONSOLE
+#if defined(_CONSOLE)
 	// Console application
 	if (xfile.ReadCommandLineArgumentsThenParse(argv, argc)) {
 		std::cout << "Success.\n";
