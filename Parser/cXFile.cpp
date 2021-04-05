@@ -22,6 +22,7 @@ namespace ns_HoLin
 			CloseHandle(hfile);
 			hfile = nullptr;
 		}
+		text.xfiledata.Cleanup();
 	}
 	
 	BOOL cXFile::ReadCommandLineArgumentsThenParse(DWORD argv, const wchar_t **argc)
@@ -48,13 +49,17 @@ namespace ns_HoLin
 			}
 			else if (state_strings[1] == std::wstring(argc[i])) {
 				if (argv <= (i + 1)) {
-					std::cerr << "Error -f option, no file name entered, exiting.\n";
+#if defined(_CONSOLE)
+					std::wcout << L"Error -f option, no file name entered, exiting.\n";
+#endif
 					return FALSE;
 				}
 				arguments_options[map_options[state_strings[1]]] = std::wstring((const wchar_t*)argc[++i]);
 			}
 			else {
-				std::wcerr << L"Quitting unknown command \'" << (const wchar_t*)argc[i] << L"\'\n";
+#if defined(_CONSOLE)
+				std::wcout << L"Quitting unknown command \'" << (const wchar_t*)argc[i] << L"\'\n";
+#endif
 				return FALSE;
 			}
 		}
@@ -66,18 +71,24 @@ namespace ns_HoLin
 			OpenFileWithMeshFileName();
 		}
 		if (hfile) {
-			std::wcout << "File opened.\n";
+#if defined(_CONSOLE)
+			std::wcout << L"File opened.\n";
+#endif
 			try {
 				if (arguments_options[map_options[state_strings[0]]].has_value())
 					btrack = std::any_cast<BOOL>(arguments_options[map_options[state_strings[0]]]);
 				if (this->ParseFile(btrack)) {
-					std::clog << "File parsed successfully.\n";
+#if defined(_CONSOLE)
+					std::wcout << L"File parsed successfully.\n";
+#endif
 					CloseHandle(hfile);
 					hfile = nullptr;
 					return TRUE;
 				}
 				else {
-					std::clog << "Error parsing file.\n";
+#if defined(_CONSOLE)
+					std::wcout << L"Error parsing file.\n";
+#endif
 				}
 			}
 			catch (ns_HoLin::sErrorMessageException serror) {
@@ -89,7 +100,6 @@ namespace ns_HoLin
 			CloseHandle(hfile);
 			hfile = nullptr;
 		}
-		std::clog << "Error.\n";
 		return FALSE;
 	}
 
@@ -112,7 +122,7 @@ namespace ns_HoLin
 #ifdef _WINDOWS
 				MessageBox(nullptr, L"Could not open mesh file.", L"Error", MB_OK);
 #else
-				std::cout << "Could not open mesh file.\n";
+				std::wcout << L"Could not open mesh file.\n";
 #endif
 			}
 		}
@@ -120,7 +130,7 @@ namespace ns_HoLin
 #ifdef _WINDOWS
 			MessageBox(nullptr, L"No file name entered.", L"Error", MB_OK);
 #else
-			std::cout << "Error no file name entered.\n";
+			std::wcout << L"Error no file name entered.\n";
 #endif
 		}
 		return FALSE;
@@ -141,12 +151,12 @@ namespace ns_HoLin
 				openfile(buff);
 			}
 			else {
-				std::cerr << "\nError \'file.txt\' empty.\n";
+				std::wcout << L"\nError \'file.txt\' empty.\n";
 			}
 			fin.close();
 		}
 		else {
-			std::cerr << "\nError opening \'file.txt\'.\n";
+			std::wcout << L"\nError opening \'file.txt\'.\n";
 		}
 	}
 
@@ -190,7 +200,7 @@ namespace ns_HoLin
 #if defined(_WINDOWS)
 						MessageBox(nullptr, L"Error not an x file.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-						std::cout << "Error not an x file.\n";
+						std::wcout << L"Error not an x file.\n";
 #endif
 						return FALSE;
 					}
@@ -203,7 +213,7 @@ namespace ns_HoLin
 #if defined(_WINDOWS)
 						MessageBox(nullptr, L"Error unknown version.\r\nOnly version 0303 supported.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-						std::cout << "Error unknown version.\nOnly version 0303 supported.\n";
+						std::wcout << L"Error unknown version.\nOnly version 0303 supported.\n";
 #endif
 						return FALSE;
 					}
@@ -218,7 +228,7 @@ namespace ns_HoLin
 #if defined(_WINDOWS)
 						MessageBox(nullptr, L"Binary version not supported at this time.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-						std::cout << "Binary version not supported at this time.\n";
+						std::wcout << L"Binary version not supported at this time.\n";
 #endif
 						return FALSE;
 					case XOFFILE_FORMAT_COMPRESSED:
@@ -226,14 +236,14 @@ namespace ns_HoLin
 #if defined(_WINDOWS)
 						MessageBox(nullptr, L"Can't read compressed file.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-						std::cout << "Can't read compressed file.\n";
+						std::wcout << L"Can't read compressed file.\n";
 #endif
 						return FALSE;
 					default:
 #if defined(_WINDOWS)
 						MessageBox(nullptr, L"Header error, unknown file format.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-						std::cout << "Header error, unknown file format.\n";
+						std::wcout << L"Header error, unknown file format.\n";
 #endif
 						return FALSE;
 					}
@@ -248,14 +258,14 @@ namespace ns_HoLin
 #if defined(_WINDOWS)
 						MessageBox(nullptr, L"64 bit float not supported at this time.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-						std::cout << "64 bit float not supported at this time.\n";
+						std::wcout << L"64 bit float not supported at this time.\n";
 #endif
 						return FALSE;
 					default:
 #if defined(_WINDOWS)
 						MessageBox(nullptr, L"Unknown float size.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-						std::cout << "Unknown float size.\n";
+						std::wcout << L"Unknown float size.\n";
 #endif
 						return FALSE;
 					}
@@ -265,7 +275,7 @@ namespace ns_HoLin
 #if defined(_WINDOWS)
 				MessageBox(nullptr, L"Unable to read X file header.", L"Error", MB_OK);
 #elif defined(_CONSOLE)
-				std::cout << "Unable to read X file header.\n";
+				std::wcout << L"Unable to read X file header.\n";
 #endif
 				return FALSE;
 			}

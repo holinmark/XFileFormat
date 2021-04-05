@@ -199,34 +199,30 @@ int wmain(DWORD argv, const wchar_t **argc)
 #if defined(_WINDOWS)
 	// Win32 application
 	if (xfile.ReadXFile(L"mesh//Five_Wheeler_mesh.txt")) {
-		std::cout << "Success.\n";
 		if (xfile.GetXFileType() == TEXT_FILE) {
 			ns_HoLin::cTextXFileParser *p = xfile.GetTextData();
 	
 			if (p) {
 				PrintData(p);
 			}
-			else {
-				std::cout << "Error pointer.\n";
-			}
 		}
 	}
-#endif
-#if defined(_CONSOLE)
+	MessageBox(nullptr, L"Terminating program.", L"End", MB_OK);
+#else
 	// Console application
 	if (xfile.ReadCommandLineArgumentsThenParse(argv, argc)) {
-		std::cout << "Success.\n";
+		std::wcout << L"Success.\n";
 		if (xfile.GetXFileType() == TEXT_FILE) {
 			ns_HoLin::cTextXFileParser *p = xfile.GetTextData();
 			if (p) {
 				PrintData(p);
 			}
 			else {
-				std::cout << "Error pointer.\n";
+				std::wcout << L"Error pointer.\n";
 			}
 		}
 	}
+	std::wcout << L"Closing program.\n";
 #endif
-	std::clog << "Closing program.\n";
 	return 1;
 }

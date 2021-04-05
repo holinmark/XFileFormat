@@ -1,9 +1,10 @@
-#include "pch.h"
+#include "stdafx.h"
 
 namespace ns_HoLin
 {
-	cBinaryXFileParser::cBinaryXFileParser(const wchar_t *filename) : sfile(filename)
+	cBinaryXFileParser::cBinaryXFileParser()
 	{
+		sfile.DeleteBuffer();
 	}
 	
 	cBinaryXFileParser::~cBinaryXFileParser()

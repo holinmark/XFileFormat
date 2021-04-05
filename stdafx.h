@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <tchar.h>
 
+#ifdef _CONSOLE
+#include <process.h>
+#endif
+
 #include <cctype>
 #include <cwchar>
 #include <iostream>
@@ -24,6 +28,7 @@
 #include <new>
 #include <cstdarg>
 #include <unordered_map>
+#include <tuple>
 
 #include "cBinaryXFileParser.h"
 #include "cTextXFileParser.h"

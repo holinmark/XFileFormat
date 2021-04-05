@@ -5,6 +5,12 @@
 
 #include <DirectXMath.h>
 #include <Windows.h>
+
+#if defined(_CONSOLE)
+#include <stdio.h>
+#include <process.h>
+#endif
+
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -40,11 +46,10 @@ namespace ns_HoLin
 	class cTextXFileParser
 	{
 	public:
-		ns_HoLin::sFileIO sfile;
+		ns_HoLin::cFileInput sfile;
 		ns_HoLin::sXFileData xfiledata;
 		ns_HoLin::sErrorMessageException serrormessages;
 		BOOL trackoutput;
-		BOOL endoffile;
 		
 		cTextXFileParser();
 		~cTextXFileParser();
@@ -56,7 +61,6 @@ namespace ns_HoLin
 		ns_HoLin::sFunctionCallHistory functioncalls;
 		
 		BOOL GetChar();
-		//BOOL GetXFileHeader();
 		BOOL GetTemplateName(char*, std::size_t);
 		BOOL GetDigit(char*, std::size_t);
 		BOOL GetSignedDigit(char*, std::size_t);
@@ -123,14 +127,12 @@ namespace ns_HoLin
 		BOOL GetAnimationSet(char*, std::size_t);
 		BOOL GetAnimTicksPerSecond(char*, std::size_t);
 		BOOL ExtractTemplates(char*, std::size_t);
-		BOOL Recovery(char*, std::size_t, char, char);
 		BOOL VerifyToken(char);
 		BOOL GetCarriageReturn();
 		BOOL ReadCommentChar();
 		BOOL GetComment();
 		BOOL GetNextInput(std::function<BOOL(int)>);
 		BOOL GetNextToken(const char);
-		void GetOffendingLine(std::string&, std::string&);
 		BOOL PrintOffendingLine(const char*, ...);
 		
 		friend BOOL IsWhiteSpace(ns_HoLin::cTextXFileParser*, int);
