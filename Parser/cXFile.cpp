@@ -105,20 +105,19 @@ namespace ns_HoLin
 
 	BOOL cXFile::ReadXFile(const wchar_t *file_name)
 	{
+		BOOL success = FALSE;
+		
 		if (hfile)
-			return FALSE;
+			return success;
 		Cleanup();
 		text.xfiledata.Cleanup();
 		if (file_name) {
 			if (openfile(file_name)) {
-				BOOL r = this->ParseFile(FALSE);
+				success = this->ParseFile(FALSE);
 				CloseHandle(hfile);
 				hfile = nullptr;
-				return r;
 			}
 			else {
-				CloseHandle(hfile);
-				hfile = nullptr;
 #ifdef _WINDOWS
 				MessageBox(nullptr, L"Could not open mesh file.", L"Error", MB_OK);
 #else
@@ -133,7 +132,7 @@ namespace ns_HoLin
 			std::wcout << L"Error no file name entered.\n";
 #endif
 		}
-		return FALSE;
+		return success;
 	}
 
 	void cXFile::OpenFileWithMeshFileName()

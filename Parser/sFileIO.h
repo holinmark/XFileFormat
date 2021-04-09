@@ -20,7 +20,6 @@ namespace ns_HoLin
 		BOOL endoffile;
 
 	public:
-
 		cFileInput();
 		~cFileInput();
 		explicit operator bool() const;
