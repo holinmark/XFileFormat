@@ -6,6 +6,7 @@ namespace ns_HoLin
 	{
 		SYSTEM_INFO sys_info;
 		
+		hfile = nullptr;
 		page_size_in_bytes = 0;
 		file_buffer = NULL;
 		bytes_read_from_file = 0;
@@ -22,6 +23,7 @@ namespace ns_HoLin
 
 	cFileInput::~cFileInput()
 	{
+		hfile = nullptr;
 		page_size_in_bytes = 0;
 		bytes_read_from_file = 0;
 		index_of_next_char_to_read = 0;
@@ -43,9 +45,11 @@ namespace ns_HoLin
 			index_of_next_char_to_read = 0;
 			file_buffer[0] = '\0';
 			if (!ReadFile(*hfile, (LPVOID)file_buffer, (DWORD)(page_size_in_bytes - 1), (LPDWORD)&bytes_read_from_file, nullptr)) {
+				hfile = nullptr;
 				return FALSE;
 			}
 			if (bytes_read_from_file == 0) {
+				hfile = nullptr;
 				endoffile = TRUE;
 				return FALSE;
 			}
@@ -58,9 +62,11 @@ namespace ns_HoLin
 	BOOL cFileInput::GetBytesFromFile(char *buffer, std::size_t blen, std::size_t &bytes_to_read)
 	{
 		if (!ReadFile(*hfile, (LPVOID)buffer, (DWORD)bytes_to_read, (LPDWORD)&bytes_read_from_file, nullptr)) {
+			hfile = nullptr;
 			return FALSE;
 		}
 		if (bytes_read_from_file == 0) {
+			hfile = nullptr;
 			return FALSE;
 		}
 		return TRUE;
